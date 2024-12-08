@@ -16,6 +16,7 @@ class NearbyInteractionManager: NSObject, ObservableObject {
     private let mcAdvertiser: MCNearbyServiceAdvertiser //廣播本設備
     private let mcBrowser: MCNearbyServiceBrowser  //掃描並發現其他正在廣播的設備
     private var peerToken: NIDiscoveryToken?
+    private var isAdvertising = false // 確保 setupMultipeerConnectivity 只執行一次
 
     override init() {
         mcSession = MCSession(peer: mcPeerID, securityIdentity: nil, encryptionPreference: .required)
@@ -31,6 +32,13 @@ class NearbyInteractionManager: NSObject, ObservableObject {
     
     //啟動廣播與搜尋 讓此設備成為"主持人"
     func setupMultipeerConnectivity() {
+        guard !isAdvertising else {
+            print("正在廣播和搜尋，無需重複啟動")
+            return
+        }
+
+        isAdvertising = true
+        
         mcAdvertiser.startAdvertisingPeer() //廣播，讓其他設備能看到這個設備
         mcBrowser.startBrowsingForPeers()   // 搜索其他設備，嘗試與它們配對
         print("正在廣播和搜尋設備")
@@ -120,7 +128,11 @@ extension NearbyInteractionManager: NISessionDelegate {
             self.distance = nearbyObject.distance
 
             if let newDirection = nearbyObject.direction {
+                print(newDirection)
                 self.direction = self.smoothDirection(current: newDirection, previous: self.direction)
+            }
+            else {
+                print("方向數據為 nil，無法更新方向")
             }
         }
     }
