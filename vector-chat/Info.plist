@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- 本地網絡使用描述 -->
+    <key>NSLocalNetworkUsageDescription</key>
+    <string>需要此權限來與附近設備連線</string>
+
+    <!-- Bonjour Services -->
+    <key>NSBonjourServices</key>
+    <array>
+        <string>_ni-demo._tcp</string>
+    </array>
+
+    <!-- 藍牙使用描述 -->
+    <key>NSBluetoothAlwaysUsageDescription</key>
+    <string>需要此權限來與附近設備連線</string>
+
+    <!-- Nearby Interaction 使用描述 -->
+    <key>NSNearbyInteractionUsageDescription</key>
+    <string>需要此權限來與附近設備交互</string>
+
+    <key>NSCameraUsageDescription</key>
+    <string>需要使用相機來提高目標方向的準確性。</string>
+
+
+    <!-- URL Schemes -->
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleURLName</key>
+            <string>com.example.NearbyInteraction</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>ni-demo</string>
+            </array>
+        </dict>
+    </array>
+</dict>
+</plist>
