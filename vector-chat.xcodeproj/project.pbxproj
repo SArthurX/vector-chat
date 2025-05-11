@@ -414,6 +414,10 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "vector-chat/Info.plist";
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "需要此權限來與附近設備連線";
+				INFOPLIST_KEY_NSCameraUsageDescription = "需要使用相機來提高目標方向的準確性。";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "";
+				INFOPLIST_KEY_NSNearbyInteractionUsageDescription = "需要此權限來與附近設備交互";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -446,6 +450,10 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "vector-chat/Info.plist";
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "需要此權限來與附近設備連線";
+				INFOPLIST_KEY_NSCameraUsageDescription = "需要使用相機來提高目標方向的準確性。";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "";
+				INFOPLIST_KEY_NSNearbyInteractionUsageDescription = "需要此權限來與附近設備交互";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
