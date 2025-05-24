@@ -16,6 +16,7 @@
 	<key>NSBonjourServices</key>
 	<array>
 		<string>_vectorchat._tcp</string>
+		<string>_vectorchat._udp</string>
 	</array>
 </dict>
 </plist>
