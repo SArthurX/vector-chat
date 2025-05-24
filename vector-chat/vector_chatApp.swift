@@ -81,7 +81,7 @@ class NearbyInteractionManager: NSObject, ObservableObject {
         self.deviceUUID = UIDevice.current.identifierForVendor?.uuidString ?? UUID().uuidString
         
         // 檢查裝置是否支援 UWB
-        guard NISession.isSupported else {
+        guard NISession.deviceCapabilities.supportsPreciseDistanceMeasurement else {
             print("UWB 不支援於此裝置")
             self.isUnsupportedDevice = true
             // 初始化 MultipeerConnectivity 相關的屬性，即使 UWB 不支援，也需要先初始化
@@ -151,7 +151,7 @@ class NearbyInteractionManager: NSObject, ObservableObject {
 
     // MARK: - NearbyInteraction Session 設定與管理
     private func setupNISession() {
-        guard NISession.isSupported else {
+        guard NISession.deviceCapabilities.supportsPreciseDistanceMeasurement else {
             print("UWB 不支援於此裝置，無法設定 NI Session")
             self.isUnsupportedDevice = true
             return
@@ -183,7 +183,7 @@ class NearbyInteractionManager: NSObject, ObservableObject {
                 if let self = self, self.sessionInvalidated { // 如果之前已標記為失效
                     print("NI Session 已失效，重新設定")
                     self.setupNISession() // 嘗試重新設定
-                } else if self?.niSession == nil && NISession.isSupported {
+                } else if self?.niSession == nil && NISession.deviceCapabilities.supportsPreciseDistanceMeasurement {
                     print("NI Session 為 nil，重新設定")
                     self?.setupNISession()
                 }
@@ -368,7 +368,7 @@ extension NearbyInteractionManager: NISessionDelegate {
         // 可以嘗試重新啟動 Session，或者提示用戶
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
             // 避免立即重試導致循環
-            if NISession.isSupported && !(self?.isUnsupportedDevice ?? true) { // 確保仍然支援且不是因為不支援而失效
+            if NISession.deviceCapabilities.supportsPreciseDistanceMeasurement && !(self?.isUnsupportedDevice ?? true) { // 確保仍然支援且不是因為不支援而失效
                  debuglog("嘗試重新設定 NI Session...")
                  self?.setupNISession() // 嘗試重新設定
             }
@@ -561,7 +561,7 @@ extension NearbyInteractionManager: MCSessionDelegate {
                 // 確保 niSession 存在且有效
                 guard let niSession = self.niSession, !self.sessionInvalidated else {
                     debuglog("NI Session 無效或不存在，無法為 \(peerID.displayName) 運行 Configuration")
-                    if NISession.isSupported {
+                    if NISession.deviceCapabilities.supportsPreciseDistanceMeasurement {
                         print("嘗試重新設定 NI Session 後再處理 Token...")
                         self.setupNISession() // 嘗試重新設定
                         // 延遲一點時間再嘗試 run configuration，給 setupNISession 一點時間
