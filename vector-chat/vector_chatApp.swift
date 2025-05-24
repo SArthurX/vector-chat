@@ -105,7 +105,7 @@ class NearbyInteractionManager: NSObject, ObservableObject {
         self.serviceAdvertiser.delegate = self
         self.serviceBrowser.delegate = self
 
-        debuglog("本機 PeerID: \(myPeerID.displayName), UUID: \(deviceUUID)")
+        debuglog("本機 PeerID: \(myPeerID.displayName.prefix(5))")
         startBrowse() // 開始瀏覽附近裝置
         startAdvertising() // 開始廣播本機服務
 
@@ -877,7 +877,7 @@ struct DeviceRow: View {
                     .font(.headline)
                 
                 // 調試輸出 - 改進版本
-                let _ = debuglog("\(device.displayName) - distance: \(device.distance?.description ?? "nil"), direction: \(device.direction?.debugDescription ?? "nil"), lastUpdateTime: \(device.lastUpdateTime)")
+                let _ = debuglog("\(device.displayName.prefix(5)) - distance: \(device.distance?.description ?? "nil"), direction: \(device.direction?.debugDescription ?? "nil"), lastUpdateTime: \(device.lastUpdateTime)")
                 
                 if let distance = device.distance {
                     Text(String(format: "距離: %.2f 公尺", distance))
