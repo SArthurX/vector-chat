@@ -32,6 +32,7 @@ class MCService: NSObject, ObservableObject {
     
     // MARK: - 回調
     var onDiscoveryTokenReceived: ((MCPeerID, NIDiscoveryToken) -> Void)?
+    var onPeerConnected: (() -> Void)?
     
     // MARK: - 初始化
     override init() {
@@ -46,8 +47,8 @@ class MCService: NSObject, ObservableObject {
         
         super.init()
         
-        serviceAdvertiser.delegate = self
-        serviceBrowser.delegate = self
+        self.serviceAdvertiser.delegate = self
+        self.serviceBrowser.delegate = self
         
         debuglog("本機 PeerID: \(myPeerID.displayName.prefix(5))")
     }
@@ -58,8 +59,8 @@ class MCService: NSObject, ObservableObject {
     
     // MARK: - 公開方法
     func start() {
-        startAdvertising()
         startBrowsing()
+        startAdvertising()
     }
     
     func stop() {
@@ -248,6 +249,9 @@ extension MCService: MCSessionDelegate {
                 self.connectedPeers.insert(peerID)
                 self.pendingInvitations.remove(peerID)
                 self.connectingPeers.remove(peerID)
+                
+                // 觸發回調，通知有新的連接建立
+                self.onPeerConnected?()
                 
             case .connecting:
                 debuglog("MCP Session 與 \(peerID.displayName) 正在連接...")

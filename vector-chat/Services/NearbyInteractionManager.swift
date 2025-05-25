@@ -39,13 +39,12 @@ class NearbyInteractionManager: NSObject, ObservableObject {
             return
         }
 
-        self.niService = NIService()
         self.mcService = MCService()
+        self.niService = NIService()
         
         super.init()
-        
         setupBindings()
-        start()
+ 
     }
 
     deinit {
@@ -86,8 +85,13 @@ class NearbyInteractionManager: NSObject, ObservableObject {
             self?.niService.runConfiguration(for: peerID, with: token)
         }
         
+        // 設置 MC 服務的連接回調，觸發 Discovery Token 發送
+        mcService.onPeerConnected = { [weak self] in
+            self?.niService.sendDiscoveryTokenIfReady()
+        }
+        
         // 設置 NI 服務的 Discovery Token 發送回調
-        niService.onDiscoveryTokenReady = { [weak self] token in
+        niService.onDiscoveryTokenReady = { [weak self] (token: NIDiscoveryToken) in
             self?.mcService.sendDiscoveryToken(token)
         }
     }
@@ -132,8 +136,8 @@ class NearbyInteractionManager: NSObject, ObservableObject {
         }
         
         debuglog("NearbyInteractionManager 啟動")
-        niService.start()
         mcService.start()
+        niService.start()
     }
 
     func stop() {

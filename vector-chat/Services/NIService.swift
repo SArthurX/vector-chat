@@ -10,8 +10,6 @@ import NearbyInteraction
 import MultipeerConnectivity
 import Combine
 
-/// 調試日誌工具 (臨時)
-
 
 /// NearbyInteraction 服務管理類別
 class NIService: NSObject, ObservableObject {
@@ -28,6 +26,7 @@ class NIService: NSObject, ObservableObject {
     
     // MARK: - 回調
     var onDiscoveryTokenReady: ((NIDiscoveryToken) -> Void)?
+    var shouldSendToken: (() -> Bool)?
     
     // MARK: - 初始化
     override init() {
@@ -83,7 +82,19 @@ class NIService: NSObject, ObservableObject {
         nearbyObjects.removeValue(forKey: peerID)
     }
     
-    // MARK: - 私有方法
+    /// 觸發 Discovery Token 發送（當有 MC 連接時調用）
+    func sendDiscoveryTokenIfReady() {
+        guard let niSession = niSession, !sessionInvalidated,
+              let token = niSession.discoveryToken else {
+            debuglog("NI Session 未準備好或無效，無法發送 Discovery Token")
+            return
+        }
+        
+        debuglog("觸發 Discovery Token 發送")
+        onDiscoveryTokenReady?(token)
+    }
+    
+    // MARK: - NearbyInteraction Session 設定與管理
     private func setupNISession() {
         // 避免重複創建 Session
         guard niSession == nil else {
@@ -97,10 +108,8 @@ class NIService: NSObject, ObservableObject {
         isSessionInvalidated = false
         debuglog("NI Session 已設定並指派代理")
         
-        // 通知 Discovery Token 已準備好
-        if let token = niSession?.discoveryToken {
-            onDiscoveryTokenReady?(token)
-        }
+        // 不立即發送 Discovery Token，等待有連接時再發送
+        debuglog("NI Session 準備就緒，等待 MC 連接後再發送 Discovery Token")
     }
     
     private func setupLifecycleObservers() {
