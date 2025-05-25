@@ -38,7 +38,7 @@ class MCService: NSObject, ObservableObject {
     
     // MARK: - 回調
     var onDiscoveryTokenReceived: ((MCPeerID, NIDiscoveryToken) -> Void)?
-    var onPeerConnected: (() -> Void)?
+    var onPeerConnected: ((MCPeerID) -> Void)?
     
     // MARK: - 初始化
     override init() {
@@ -128,6 +128,37 @@ class MCService: NSObject, ObservableObject {
             
             debuglog("已傳送 Discovery Token 給 \(successCount) 個新連接的 peers")
         }
+    }
+    
+    func sendDiscoveryToken(_ token: NIDiscoveryToken, to peerID: MCPeerID) -> Bool {
+        guard let session = peerSessions[peerID],
+              session.connectedPeers.contains(peerID) else {
+            debuglog("無法向 \(peerID.displayName.prefix(5)) 發送 token：連接不存在或未建立")
+            return false
+        }
+        
+        var success = false
+        tokenSendingQueue.sync { [weak self] in
+            guard let self = self else { return }
+            
+            do {
+                let data = try NSKeyedArchiver.archivedData(withRootObject: token, requiringSecureCoding: true)
+                try session.send(data, toPeers: [peerID], with: .reliable)
+                
+                // 標記為已發送
+                DispatchQueue.main.async {
+                    self.tokenSentToPeers.insert(peerID)
+                }
+                
+                debuglog("成功傳送 Discovery Token 給 \(peerID.displayName.prefix(5))")
+                success = true
+            } catch {
+                debuglog("傳送 Discovery Token 給 \(peerID.displayName.prefix(5)) 失敗: \(error.localizedDescription)")
+                success = false
+            }
+        }
+        
+        return success
     }
     
     func disconnectPeer(_ peerID: MCPeerID) {
@@ -337,7 +368,7 @@ extension MCService: MCSessionDelegate {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
                     if self.connectedPeers.contains(peerID) && session.connectedPeers.contains(peerID) {
                         debuglog("確認 \(peerID.displayName.prefix(5)) 連接穩定，觸發回調")
-                        self.onPeerConnected?()
+                        self.onPeerConnected?(peerID)
                     }
                 }
                 

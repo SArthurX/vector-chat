@@ -9,6 +9,7 @@ import SwiftUI
 import NearbyInteraction
 import MultipeerConnectivity
 import Combine
+import simd
 
 
 /// UWB 和多點連接管理器 (ViewModel)
@@ -20,8 +21,11 @@ class NearbyInteractionManager: NSObject, ObservableObject {
     @Published var isUnsupportedDevice = false // 是否為不支援 UWB 的裝置
 
     // MARK: - 服務組件
-    private let niService: NIService
     private let mcService: MCService
+    
+    // MARK: - 多 NISession 架構
+    private var niSessions: [MCPeerID: NISession] = [:] // 每個 peer 都有獨立的 NISession
+    private var tokenMap: [NIDiscoveryToken: MCPeerID] = [:] // token 到 peer 的映射
     
     // MARK: - 其他內部屬性
     private var cancellables = Set<AnyCancellable>() // 用於 Combine
@@ -33,14 +37,12 @@ class NearbyInteractionManager: NSObject, ObservableObject {
             print("UWB 不支援於此裝置")
             self.isUnsupportedDevice = true
             // 即使 UWB 不支援，也要初始化服務以避免崩潰
-            self.niService = NIService()
             self.mcService = MCService()
             super.init()
             return
         }
 
         self.mcService = MCService()
-        self.niService = NIService()
         
         super.init()
         setupBindings()
@@ -54,13 +56,6 @@ class NearbyInteractionManager: NSObject, ObservableObject {
 
     // MARK: - 私有方法
     private func setupBindings() {
-        // 監聽 NI 服務的裝置更新
-        niService.$nearbyObjects
-            .sink { [weak self] objects in
-                self?.handleNIObjectsUpdate(objects)
-            }
-            .store(in: &cancellables)
-        
         // 監聽 MC 服務的連接狀態
         mcService.$connectedPeers
             .sink { [weak self] peers in
@@ -75,35 +70,75 @@ class NearbyInteractionManager: NSObject, ObservableObject {
             }
             .store(in: &cancellables)
         
-        // 監聽 NI Session 狀態
-        niService.$isSessionInvalidated
-            .assign(to: \.isNISessionInvalidated, on: self)
-            .store(in: &cancellables)
-        
         // 設置 MC 服務的 Discovery Token 回調
-        mcService.onDiscoveryTokenReceived = { [weak self] peerID, token in
-            self?.niService.runConfiguration(for: peerID, with: token)
+        mcService.onDiscoveryTokenReceived = { [weak self] (peerID: MCPeerID, token: NIDiscoveryToken) in
+            self?.handleReceivedToken(from: peerID, token: token)
         }
         
         // 設置 MC 服務的連接回調，觸發 Discovery Token 發送
-        mcService.onPeerConnected = { [weak self] in
+        mcService.onPeerConnected = { [weak self] (peerID: MCPeerID) in
             // 延遲發送，確保連接穩定後再發送 Discovery Token
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                self?.niService.sendDiscoveryTokenIfReady()
+                self?.sendDiscoveryToken(to: peerID)
             }
-        }
-        
-        // 設置 NI 服務的 Discovery Token 發送回調
-        niService.onDiscoveryTokenReady = { [weak self] (token: NIDiscoveryToken) in
-            self?.mcService.sendDiscoveryToken(token)
         }
     }
     
-    private func handleNIObjectsUpdate(_ objects: [MCPeerID: NINearbyObject]) {
-        DispatchQueue.main.async {
-            for (peerID, object) in objects {
-                self.updateDevice(peerID, distance: object.distance, direction: object.direction)
+    // MARK: - NISession 管理方法
+    private func createNISession(for peerID: MCPeerID) -> NISession {
+        if let existingSession = niSessions[peerID] {
+            return existingSession
+        }
+        
+        let session = NISession()
+        session.delegate = self
+        niSessions[peerID] = session
+        print("🔧 為 \(peerID.displayName) 建立新的 NISession")
+        return session
+    }
+    
+    private func removeNISession(for peerID: MCPeerID) {
+        if let session = niSessions[peerID] {
+            session.invalidate()
+            niSessions.removeValue(forKey: peerID)
+            print("🧹 移除 \(peerID.displayName) 的 NISession")
+        }
+        
+        // 清理 token 映射
+        tokenMap = tokenMap.filter { $0.value != peerID }
+    }
+    
+    private func sendDiscoveryToken(to peerID: MCPeerID) {
+        // 確保有對應的 NISession
+        let session = createNISession(for: peerID)
+        
+        guard let token = session.discoveryToken else {
+            print("無法獲取 \(peerID.displayName) 的 NIDiscoveryToken，稍後重試")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                self.sendDiscoveryToken(to: peerID)
             }
+            return
+        }
+        
+        // 發送 token
+        mcService.sendDiscoveryToken(token, to: peerID)
+        print("✅ 發送 discovery token 給 \(peerID.displayName)")
+    }
+    
+    private func handleReceivedToken(from peerID: MCPeerID, token: NIDiscoveryToken) {
+        print("📨 收到來自 \(peerID.displayName) 的 discovery token")
+        
+        // 建立 token 映射
+        tokenMap[token] = peerID
+        
+        // 獲取或建立對應的 NISession
+        let session = createNISession(for: peerID)
+        
+        // 配置並啟動 NI
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            let config = NINearbyPeerConfiguration(peerToken: token)
+            session.run(config)
+            print("✅ 已為 \(peerID.displayName) 配置並啟動 NI")
         }
     }
     
@@ -113,6 +148,7 @@ class NearbyInteractionManager: NSObject, ObservableObject {
             let disconnectedPeers = Set(self.nearbyDevices.keys).subtracting(peers)
             for peerID in disconnectedPeers {
                 self.nearbyDevices.removeValue(forKey: peerID)
+                self.removeNISession(for: peerID) // 清理對應的 NISession
             }
         }
     }
@@ -138,15 +174,18 @@ class NearbyInteractionManager: NSObject, ObservableObject {
             return
         }
         
-        debuglog("NearbyInteractionManager 啟動")
+        print("NearbyInteractionManager 啟動")
         mcService.start()
-        niService.start()
     }
 
     func stop() {
         print("NearbyInteractionManager 停止")
-        niService.stop()
         mcService.stop()
+        
+        // 清理所有 NISession
+        niSessions.values.forEach { $0.invalidate() }
+        niSessions.removeAll()
+        tokenMap.removeAll()
         
         DispatchQueue.main.async {
             self.nearbyDevices.removeAll()
@@ -172,7 +211,7 @@ class NearbyInteractionManager: NSObject, ObservableObject {
                 lastUpdateTime: Date()
             )
             self.nearbyDevices[peerID] = newDevice
-            debuglog("創建新裝置")
+            print("創建新裝置: \(peerID.displayName)")
         }
     }
 
@@ -185,10 +224,48 @@ class NearbyInteractionManager: NSObject, ObservableObject {
             }.map { $0.key }
             
             for id in inactiveDeviceIDs {
-                debuglog("清理超時裝置: \(self.nearbyDevices[id]?.displayName ?? id.displayName)")
+                print("清理超時裝置: \(self.nearbyDevices[id]?.displayName ?? id.displayName)")
                 self.nearbyDevices.removeValue(forKey: id)
                 self.mcService.disconnectPeer(id)
-                self.niService.removePeer(id)
+                self.removeNISession(for: id)
+            }
+        }
+    }
+}
+
+// MARK: - NISessionDelegate
+extension NearbyInteractionManager: NISessionDelegate {
+    func session(_ session: NISession, didUpdate nearbyObjects: [NINearbyObject]) {
+        for object in nearbyObjects {
+            guard let peerID = tokenMap[object.discoveryToken] else { continue }
+            
+            DispatchQueue.main.async {
+                self.updateDevice(peerID, distance: object.distance, direction: object.direction)
+            }
+        }
+    }
+    
+    func session(_ session: NISession, didRemove nearbyObjects: [NINearbyObject], reason: NINearbyObject.RemovalReason) {
+        for object in nearbyObjects {
+            guard let peerID = tokenMap[object.discoveryToken] else { continue }
+            
+            DispatchQueue.main.async {
+                print("📍 移除 \(peerID.displayName) 的距離資料，原因: \(reason)")
+                self.updateDevice(peerID, distance: nil, direction: nil)
+                // 注意：不要在這裡移除 tokenMap，因為可能只是暫時失去測距
+            }
+        }
+    }
+    
+    func session(_ session: NISession, didInvalidateWith error: Error) {
+        print("❌ NI Session 失效: \(error)")
+        
+        // 找出是哪個 peer 的 session
+        if let peerID = niSessions.first(where: { $0.value == session })?.key {
+            DispatchQueue.main.async {
+                self.isNISessionInvalidated = true
+                self.removeNISession(for: peerID)
+                print("🧹 已移除失效的 NISession: \(peerID.displayName)")
             }
         }
     }

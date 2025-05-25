@@ -1,177 +1,172 @@
 Devise1: //先和 Devise2 連線 
-22:36:16 >>> MCService 初始化完成，本機 PeerID: B469C
-22:36:18 >>> NearbyInteractionManager 啟動
-22:36:18 >>> MCService 啟動
-22:36:18 >>> 開始瀏覽附近裝置: vectorchat
-22:36:18 >>> 開始廣播服務: vectorchat
-22:36:18 >>> NI Session 已設定並指派代理
-22:36:18 >>> NI Session 準備就緒，等待 MC 連接後再發送 Discovery Token
-22:36:18 >>> 發現裝置: 75552
-22:36:18 >>> 本機 UUID 字典序較大或無法比較，等待對方邀請 75552
-22:36:18 >>> 發現裝置: 58ECF
-22:36:18 >>> 本機 UUID 字典序較大或無法比較，等待對方邀請 58ECF
-22:36:18 >>> 發現裝置: 58ECF
-22:36:18 >>> 本機 UUID 字典序較大或無法比較，等待對方邀請 58ECF
-22:36:18 >>> 發現裝置: 58ECF
-22:36:18 >>> 本機 UUID 字典序較大或無法比較，等待對方邀請 58ECF
-22:36:18 >>> 發現裝置: 58ECF
-22:36:18 >>> 本機 UUID 字典序較大或無法比較，等待對方邀請 58ECF
-22:36:18 >>> 發現裝置: 58ECF
-22:36:18 >>> 本機 UUID 字典序較大或無法比較，等待對方邀請 58ECF
-22:36:23 >>> 發現裝置: 58ECF
-22:36:23 >>> 本機 UUID 字典序較大或無法比較，等待對方邀請 58ECF
-22:36:24 >>> 裝置消失 (MCP): 58ECF
-22:36:24 >>> 收到來自 58ECF 的連接邀請
-22:36:24 >>> 為 58ECF 創建獨立 MCSession
-22:36:24 >>> 已接受來自 58ECF 的連接邀請，使用獨立 Session
-22:36:24 >>> 重置連接嘗試計數器給 58ECF
-22:36:24 >>> 獨立 Session 與 58ECF 正在連接...
-22:36:25 >>> 獨立 Session 與 58ECF 已連接
-22:36:25 >>> 重置連接嘗試計數器給 58ECF
-22:36:25 >>> 目前已連接的裝置數: 1
-22:36:27 >>> 確認 58ECF 連接穩定，觸發回調
-22:36:28 >>> 從 58ECF 收到資料，長度: 311
-22:36:28 >>> 成功從 58ECF 收到 Discovery Token
-22:36:28 >>> 觸發 Discovery Token 發送
-22:36:28 >>> 成功傳送 Discovery Token 給 58ECF
-22:36:28 >>> 已傳送 Discovery Token 給 1 個新連接的 peers
-22:36:29 >>> 將 58ECF 的配置請求加入隊列，隊列長度: 1
-22:36:29 >>> 開始處理配置隊列，為 58ECF 配置 NI
-22:36:29 >>> 為 58ECF 成功運行 NI Configuration
-// 這裡開始和 Devise3 連線
-22:37:47 >>> 發現裝置: 75552
-22:37:47 >>> 本機 UUID 字典序較大或無法比較，等待對方邀請 75552
-22:37:48 >>> 收到來自 75552 的連接邀請
-22:37:48 >>> 為 75552 創建獨立 MCSession
-22:37:48 >>> 已接受來自 75552 的連接邀請，使用獨立 Session
-22:37:48 >>> 重置連接嘗試計數器給 75552
-22:37:48 >>> 獨立 Session 與 75552 正在連接...
-22:37:49 >>> 獨立 Session 與 75552 已連接
-22:37:49 >>> 重置連接嘗試計數器給 75552
-22:37:49 >>> 目前已連接的裝置數: 2
-22:37:51 >>> 確認 75552 連接穩定，觸發回調
-22:37:52 >>> 觸發 Discovery Token 發送
-22:37:52 >>> 已向 58ECF 發送過 Discovery Token，跳過
-22:37:52 >>> 成功傳送 Discovery Token 給 75552
-22:37:52 >>> 已傳送 Discovery Token 給 1 個新連接的 peers
-22:37:52 >>> 從 75552 收到資料，長度: 311
-22:37:52 >>> 成功從 75552 收到 Discovery Token
-22:37:53 >>> 將 75552 的配置請求加入隊列，隊列長度: 1
-22:37:53 >>> 開始處理配置隊列，為 75552 配置 NI
-22:37:53 >>> 為 75552 成功運行 NI Configuration
-// 和Devise2斷線
-22:38:18 >>> 清理超時裝置: 75552BF1-C07E-42DA-AD56-4CB65419CD03
-22:38:18 >>> 斷開與 75552 的獨立連接
-22:38:18 >>> 已清理 peer: 75552
-22:38:18 >>> 獨立 Session 與 75552 未連接或已斷開
-22:38:37 >>> 獨立 Session 與 58ECF 未連接或已斷開
-22:38:37 >>> 清理 58ECF 的獨立 Session
-//沒有和任何裝置連接
-
+Error creating the CFMessagePort needed to communicate with PPT.
+03:29:47 >>> MCService 初始化完成，本機 PeerID: B469C
+NearbyInteractionManager 啟動
+03:29:48 >>> MCService 啟動
+03:29:48 >>> 開始瀏覽附近裝置: vectorchat
+03:29:48 >>> 開始廣播服務: vectorchat
+03:29:48 >>> 發現裝置: iPhon
+03:29:48 >>> 本機 UUID 字典序較大或無法比較，等待對方邀請 iPhon
+03:29:48 >>> 發現裝置: iPhon
+03:29:48 >>> 本機 UUID 字典序較小，發送邀請給 iPhon
+03:29:48 >>> 記錄連接嘗試 1 給 iPhon
+03:29:48 >>> 為 iPhon 創建獨立 MCSession
+03:29:48 >>> 發現裝置: iPhon
+03:29:48 >>> 本機 UUID 字典序較大或無法比較，等待對方邀請 iPhon
+03:29:49 >>> 已向 iPhon 發送連接邀請，使用獨立 Session
+nw_socket_handle_socket_event [C1.1.1.2:1] Socket SO_ERROR [61: Connection refused]
+nw_endpoint_flow_failed_with_error [C1.1.1.2 192.168.1.197:61764@en0 in_progress socket-flow (satisfied (Path is satisfied), viable, interface: en0[802.11], scoped, ipv4, dns, uses wifi)] already failing, returning
+nw_socket_handle_socket_event [C1.1.1.1:1] Socket SO_ERROR [61: Connection refused]
+nw_endpoint_flow_failed_with_error [C1.1.1.1 fe80::458:fa8f:e774:7e7b%en0.61764@en0 in_progress socket-flow (satisfied (Path is satisfied), viable, interface: en0[802.11], scoped, ipv4, dns, uses wifi)] already failing, returning
+03:29:57 >>> 發現裝置: B9B09
+03:29:57 >>> 本機 UUID 字典序較小，發送邀請給 B9B09
+03:29:57 >>> 記錄連接嘗試 1 給 B9B09
+03:29:57 >>> 為 B9B09 創建獨立 MCSession
+03:29:58 >>> 已向 B9B09 發送連接邀請，使用獨立 Session
+03:30:00 >>> 獨立 Session 與 B9B09 正在連接...
+03:30:01 >>> 獨立 Session 與 B9B09 已連接
+03:30:01 >>> 重置連接嘗試計數器給 B9B09
+03:30:01 >>> 目前已連接的裝置數: 1
+03:30:03 >>> 確認 B9B09 連接穩定，觸發回調
+🔧 為 B9B09F86-757D-4BDE-AC2D-76D740C44F07 建立新的 NISession
+03:30:04 >>> 成功傳送 Discovery Token 給 B9B09
+✅ 發送 discovery token 給 B9B09F86-757D-4BDE-AC2D-76D740C44F07
+03:30:04 >>> 從 B9B09 收到資料，長度: 311
+03:30:04 >>> 成功從 B9B09 收到 Discovery Token
+📨 收到來自 B9B09F86-757D-4BDE-AC2D-76D740C44F07 的 discovery token
+✅ 已為 B9B09F86-757D-4BDE-AC2D-76D740C44F07 配置並啟動 NI
+Not in connected state, so giving up for participant [63B048DD] on channel [0].
+Not in connected state, so giving up for participant [63B048DD] on channel [1].
+Not in connected state, so giving up for participant [63B048DD] on channel [2].
+Not in connected state, so giving up for participant [63B048DD] on channel [3].
+03:30:21 >>> 獨立 Session 與 iPhon 未連接或已斷開
+03:30:21 >>> 清理 iPhon 的獨立 Session
+03:30:54 >>> 發現裝置: 6BE9B
+03:30:54 >>> 本機 UUID 字典序較大或無法比較，等待對方邀請 6BE9B
+03:30:55 >>> 收到來自 6BE9B 的連接邀請
+03:30:55 >>> 為 6BE9B 創建獨立 MCSession
+03:30:55 >>> 已接受來自 6BE9B 的連接邀請，使用獨立 Session
+03:30:55 >>> 重置連接嘗試計數器給 6BE9B
+03:30:55 >>> 獨立 Session 與 6BE9B 正在連接...
+03:30:56 >>> 獨立 Session 與 6BE9B 已連接
+03:30:56 >>> 重置連接嘗試計數器給 6BE9B
+03:30:56 >>> 目前已連接的裝置數: 2
+03:30:58 >>> 確認 6BE9B 連接穩定，觸發回調
+🔧 為 6BE9B184-55A5-4CC4-943A-9D7B987E9AFE 建立新的 NISession
+03:30:59 >>> 成功傳送 Discovery Token 給 6BE9B
+✅ 發送 discovery token 給 6BE9B184-55A5-4CC4-943A-9D7B987E9AFE
+03:30:59 >>> 從 6BE9B 收到資料，長度: 311
+03:30:59 >>> 成功從 6BE9B 收到 Discovery Token
+📨 收到來自 6BE9B184-55A5-4CC4-943A-9D7B987E9AFE 的 discovery token
+✅ 已為 6BE9B184-55A5-4CC4-943A-9D7B987E9AFE 配置並啟動 NI
+Not in connected state, so giving up for participant [22B15218] on channel [0].
+Not in connected state, so giving up for participant [22B15218] on channel [1].
+Not in connected state, so giving up for participant [22B15218] on channel [2].
+Not in connected state, so giving up for participant [22B15218] on channel [3].
 
 Devise2: //先和 Devise1 連線
-22:36:21 >>> MCService 初始化完成，本機 PeerID: 58ECF
-22:36:22 >>> NearbyInteractionManager 啟動
-22:36:22 >>> MCService 啟動
-22:36:22 >>> 開始瀏覽附近裝置: vectorchat
-22:36:22 >>> 開始廣播服務: vectorchat
-22:36:22 >>> NI Session 已設定並指派代理
-22:36:22 >>> NI Session 準備就緒，等待 MC 連接後再發送 Discovery Token
-22:36:22 >>> 發現裝置: B469C
-22:36:22 >>> 本機 UUID 字典序較小，發送邀請給 B469C
-22:36:22 >>> 記錄連接嘗試 1 給 B469C
-22:36:22 >>> 為 B469C 創建獨立 MCSession
-22:36:22 >>> 已向 B469C 發送連接邀請，使用獨立 Session
-22:36:25 >>> 獨立 Session 與 B469C 正在連接...
-22:36:25 >>> 獨立 Session 與 B469C 已連接
-22:36:25 >>> 重置連接嘗試計數器給 B469C
-22:36:25 >>> 目前已連接的裝置數: 1
-22:36:27 >>> 確認 B469C 連接穩定，觸發回調
-22:36:28 >>> 觸發 Discovery Token 發送
-22:36:28 >>> 成功傳送 Discovery Token 給 B469C
-22:36:28 >>> 已傳送 Discovery Token 給 1 個新連接的 peers
-22:36:28 >>> 從 B469C 收到資料，長度: 313
-22:36:28 >>> 成功從 B469C 收到 Discovery Token
-22:36:29 >>> 將 B469C 的配置請求加入隊列，隊列長度: 1
-22:36:29 >>> 開始處理配置隊列，為 B469C 配置 NI
-22:36:29 >>> 為 B469C 成功運行 NI Configuration
-// 這裡開始和 Devise3 連線
-22:37:47 >>> 發現裝置: 75552
-22:37:47 >>> 本機 UUID 字典序較小，發送邀請給 75552
-22:37:47 >>> 記錄連接嘗試 1 給 75552
-22:37:47 >>> 為 75552 創建獨立 MCSession
-22:37:47 >>> 已向 75552 發送連接邀請，使用獨立 Session
-22:37:49 >>> 獨立 Session 與 75552 正在連接...
-error in connection_block_invoke_2: Connection invalid
-22:37:49 >>> 獨立 Session 與 75552 已連接
-22:37:49 >>> 重置連接嘗試計數器給 75552
-22:37:49 >>> 目前已連接的裝置數: 2
-22:37:51 >>> 確認 75552 連接穩定，觸發回調
-22:37:52 >>> 從 75552 收到資料，長度: 311
-22:37:52 >>> 成功從 75552 收到 Discovery Token
-22:37:52 >>> 觸發 Discovery Token 發送
-22:37:52 >>> 成功傳送 Discovery Token 給 75552
-22:37:52 >>> 已向 B469C 發送過 Discovery Token，跳過
-22:37:52 >>> 已傳送 Discovery Token 給 1 個新連接的 peers
-22:37:53 >>> 將 75552 的配置請求加入隊列，隊列長度: 1
-22:37:53 >>> 開始處理配置隊列，為 75552 配置 NI
-22:37:53 >>> 為 75552 成功運行 NI Configuration
-//和 Devise1 斷線並和 Devise3 連線
-22:38:37 >>> 清理超時裝置: B469CF45-1B9C-4A28-BC2D-3F11BEF75192
-22:38:37 >>> 斷開與 B469C 的獨立連接
-22:38:37 >>> 已清理 peer: B469C
-22:38:37 >>> 獨立 Session 與 B469C 未連接或已斷開
-//仍和 Devise3 連線中
-
-
-Devise3: //最後加入，影響Devise1斷線 
-22:37:45 >>> MCService 初始化完成，本機 PeerID: 75552
-22:37:46 >>> NearbyInteractionManager 啟動
-22:37:46 >>> MCService 啟動
-22:37:46 >>> 開始瀏覽附近裝置: vectorchat
-22:37:46 >>> 開始廣播服務: vectorchat
-22:37:46 >>> NI Session 已設定並指派代理
-22:37:46 >>> NI Session 準備就緒，等待 MC 連接後再發送 Discovery Token
-22:37:46 >>> 發現裝置: B469C
-22:37:46 >>> 本機 UUID 字典序較小，發送邀請給 B469C
-22:37:46 >>> 記錄連接嘗試 1 給 B469C
-22:37:46 >>> 為 B469C 創建獨立 MCSession
-22:37:46 >>> 發現裝置: 58ECF
-22:37:46 >>> 本機 UUID 字典序較大或無法比較，等待對方邀請 58ECF
-22:37:46 >>> 已向 B469C 發送連接邀請，使用獨立 Session
-22:37:48 >>> 獨立 Session 與 B469C 正在連接...
-22:37:48 >>> 收到來自 58ECF 的連接邀請
-22:37:48 >>> 為 58ECF 創建獨立 MCSession
-22:37:48 >>> 已接受來自 58ECF 的連接邀請，使用獨立 Session
-22:37:48 >>> 重置連接嘗試計數器給 58ECF
-22:37:48 >>> 獨立 Session 與 58ECF 正在連接...
-22:37:49 >>> 獨立 Session 與 B469C 已連接
-22:37:49 >>> 重置連接嘗試計數器給 B469C
-22:37:49 >>> 目前已連接的裝置數: 1
-22:37:49 >>> 獨立 Session 與 58ECF 已連接
-22:37:49 >>> 重置連接嘗試計數器給 58ECF
-22:37:49 >>> 目前已連接的裝置數: 2
-22:37:51 >>> 確認 B469C 連接穩定，觸發回調
-22:37:51 >>> 確認 58ECF 連接穩定，觸發回調
-22:37:52 >>> 觸發 Discovery Token 發送
-22:37:52 >>> 成功傳送 Discovery Token 給 58ECF
-22:37:52 >>> 成功傳送 Discovery Token 給 B469C
-22:37:52 >>> 已傳送 Discovery Token 給 2 個新連接的 peers
-22:37:52 >>> 從 B469C 收到資料，長度: 313
-22:37:52 >>> 成功從 B469C 收到 Discovery Token
-22:37:52 >>> 觸發 Discovery Token 發送
-22:37:52 >>> 已向 58ECF 發送過 Discovery Token，跳過
-22:37:52 >>> 已向 B469C 發送過 Discovery Token，跳過
-22:37:52 >>> 已傳送 Discovery Token 給 0 個新連接的 peers
-22:37:52 >>> 從 58ECF 收到資料，長度: 311
-22:37:52 >>> 成功從 58ECF 收到 Discovery Token
-22:37:53 >>> 將 B469C 的配置請求加入隊列，隊列長度: 1
-22:37:53 >>> 開始處理配置隊列，為 B469C 配置 NI
-22:37:53 >>> 為 B469C 成功運行 NI Configuration
-22:37:53 >>> 將 58ECF 的配置請求加入隊列，隊列長度: 1
-22:37:55 >>> 開始處理配置隊列，為 58ECF 配置 NI
-22:37:55 >>> 為 58ECF 成功運行 NI Configuration
-22:37:55 >>> 創建新裝置
-22:38:18 >>> 獨立 Session 與 B469C 未連接或已斷開
-22:38:18 >>> 清理 B469C 的獨立 Session
-//Devise2 連線中
+03:29:55 >>> MCService 初始化完成，本機 PeerID: B9B09
+NearbyInteractionManager 啟動
+03:29:56 >>> MCService 啟動
+03:29:56 >>> 開始瀏覽附近裝置: vectorchat
+03:29:56 >>> 開始廣播服務: vectorchat
+03:29:57 >>> 發現裝置: B469C
+03:29:57 >>> 本機 UUID 字典序較大或無法比較，等待對方邀請 B469C
+03:30:00 >>> 收到來自 B469C 的連接邀請
+03:30:00 >>> 為 B469C 創建獨立 MCSession
+03:30:00 >>> 已接受來自 B469C 的連接邀請，使用獨立 Session
+03:30:00 >>> 重置連接嘗試計數器給 B469C
+03:30:00 >>> 獨立 Session 與 B469C 正在連接...
+03:30:01 >>> 獨立 Session 與 B469C 已連接
+03:30:01 >>> 重置連接嘗試計數器給 B469C
+03:30:01 >>> 目前已連接的裝置數: 1
+03:30:03 >>> 確認 B469C 連接穩定，觸發回調
+🔧 為 B469CF45-1B9C-4A28-BC2D-3F11BEF75192 建立新的 NISession
+03:30:04 >>> 成功傳送 Discovery Token 給 B469C
+✅ 發送 discovery token 給 B469CF45-1B9C-4A28-BC2D-3F11BEF75192
+03:30:04 >>> 從 B469C 收到資料，長度: 313
+03:30:04 >>> 成功從 B469C 收到 Discovery Token
+📨 收到來自 B469CF45-1B9C-4A28-BC2D-3F11BEF75192 的 discovery token
+✅ 已為 B469CF45-1B9C-4A28-BC2D-3F11BEF75192 配置並啟動 NI
+Not in connected state, so giving up for participant [1D74E558] on channel [0].
+Not in connected state, so giving up for participant [1D74E558] on channel [1].
+Not in connected state, so giving up for participant [1D74E558] on channel [2].
+Not in connected state, so giving up for participant [1D74E558] on channel [3].
+03:30:54 >>> 發現裝置: 6BE9B
+03:30:54 >>> 本機 UUID 字典序較大或無法比較，等待對方邀請 6BE9B
+03:30:55 >>> 收到來自 6BE9B 的連接邀請
+03:30:55 >>> 為 6BE9B 創建獨立 MCSession
+03:30:55 >>> 已接受來自 6BE9B 的連接邀請，使用獨立 Session
+03:30:55 >>> 重置連接嘗試計數器給 6BE9B
+03:30:55 >>> 獨立 Session 與 6BE9B 正在連接...
+nw_protocol_socket_set_no_wake_from_sleep [C3:1] setsockopt SO_NOWAKEFROMSLEEP failed [22: Invalid argument]
+nw_protocol_socket_set_no_wake_from_sleep setsockopt SO_NOWAKEFROMSLEEP failed [22: Invalid argument]
+nw_protocol_socket_reset_linger [C3:1] setsockopt SO_LINGER failed [22: Invalid argument]
+SocketStream read error [0x103a4a6c0]: 1 54
+Read failed.
+Stream error occurred: Error Domain=NSPOSIXErrorDomain Code=54 "Connection reset by peer" UserInfo={_kCFStreamErrorCodeKey=54, _kCFStreamErrorDomainKey=1}.
+Stream error occurred: Error Domain=NSPOSIXErrorDomain Code=54 "Connection reset by peer" UserInfo={_kCFStreamErrorCodeKey=54, _kCFStreamErrorDomainKey=1}.
+03:30:56 >>> 獨立 Session 與 6BE9B 已連接
+03:30:56 >>> 重置連接嘗試計數器給 6BE9B
+03:30:56 >>> 目前已連接的裝置數: 2
+03:30:58 >>> 確認 6BE9B 連接穩定，觸發回調
+🔧 為 6BE9B184-55A5-4CC4-943A-9D7B987E9AFE 建立新的 NISession
+03:30:59 >>> 成功傳送 Discovery Token 給 6BE9B
+✅ 發送 discovery token 給 6BE9B184-55A5-4CC4-943A-9D7B987E9AFE
+03:30:59 >>> 從 6BE9B 收到資料，長度: 311
+03:30:59 >>> 成功從 6BE9B 收到 Discovery Token
+📨 收到來自 6BE9B184-55A5-4CC4-943A-9D7B987E9AFE 的 discovery token
+✅ 已為 6BE9B184-55A5-4CC4-943A-9D7B987E9AFE 配置並啟動 NI
+Not in connected state, so giving up for participant [22B15218] on channel [0].
+Not in connected state, so giving up for participant [22B15218] on channel [1].
+Not in connected state, so giving up for participant [22B15218] on channel [2].
+Not in connected state, so giving up for participant [22B15218] on channel [3].
+Devise3: //最後加入
+203:30:51 >>> MCService 初始化完成，本機 PeerID: 6BE9B
+NearbyInteractionManager 啟動
+03:30:53 >>> MCService 啟動
+03:30:53 >>> 開始瀏覽附近裝置: vectorchat
+03:30:53 >>> 開始廣播服務: vectorchat
+03:30:53 >>> 發現裝置: B9B09
+03:30:53 >>> 本機 UUID 字典序較小，發送邀請給 B9B09
+03:30:53 >>> 記錄連接嘗試 1 給 B9B09
+03:30:53 >>> 為 B9B09 創建獨立 MCSession
+03:30:53 >>> 發現裝置: B469C
+03:30:53 >>> 本機 UUID 字典序較小，發送邀請給 B469C
+03:30:53 >>> 記錄連接嘗試 1 給 B469C
+03:30:53 >>> 為 B469C 創建獨立 MCSession
+03:30:53 >>> 已向 B9B09 發送連接邀請，使用獨立 Session
+03:30:54 >>> 已向 B469C 發送連接邀請，使用獨立 Session
+03:30:55 >>> 獨立 Session 與 B469C 正在連接...
+03:30:56 >>> 獨立 Session 與 B469C 已連接
+03:30:56 >>> 重置連接嘗試計數器給 B469C
+03:30:56 >>> 目前已連接的裝置數: 1
+03:30:56 >>> 獨立 Session 與 B9B09 正在連接...
+03:30:56 >>> 獨立 Session 與 B9B09 已連接
+03:30:56 >>> 重置連接嘗試計數器給 B9B09
+03:30:56 >>> 目前已連接的裝置數: 2
+03:30:58 >>> 確認 B469C 連接穩定，觸發回調
+03:30:58 >>> 確認 B9B09 連接穩定，觸發回調
+🔧 為 B469CF45-1B9C-4A28-BC2D-3F11BEF75192 建立新的 NISession
+03:30:59 >>> 成功傳送 Discovery Token 給 B469C
+✅ 發送 discovery token 給 B469CF45-1B9C-4A28-BC2D-3F11BEF75192
+03:30:59 >>> 從 B469C 收到資料，長度: 313
+03:30:59 >>> 成功從 B469C 收到 Discovery Token
+🔧 為 B9B09F86-757D-4BDE-AC2D-76D740C44F07 建立新的 NISession
+03:30:59 >>> 成功傳送 Discovery Token 給 B9B09
+✅ 發送 discovery token 給 B9B09F86-757D-4BDE-AC2D-76D740C44F07
+03:30:59 >>> 從 B9B09 收到資料，長度: 311
+03:30:59 >>> 成功從 B9B09 收到 Discovery Token
+📨 收到來自 B469CF45-1B9C-4A28-BC2D-3F11BEF75192 的 discovery token
+📨 收到來自 B9B09F86-757D-4BDE-AC2D-76D740C44F07 的 discovery token
+✅ 已為 B469CF45-1B9C-4A28-BC2D-3F11BEF75192 配置並啟動 NI
+✅ 已為 B9B09F86-757D-4BDE-AC2D-76D740C44F07 配置並啟動 NI
+創建新裝置: B9B09F86-757D-4BDE-AC2D-76D740C44F07
+Not in connected state, so giving up for participant [1D74E558] on channel [0].
+Not in connected state, so giving up for participant [1D74E558] on channel [1].
+Not in connected state, so giving up for participant [1D74E558] on channel [2].
+Not in connected state, so giving up for participant [1D74E558] on channel [3].
+Not in connected state, so giving up for participant [63B048DD] on channel [0].
+Not in connected state, so giving up for participant [63B048DD] on channel [1].
+Not in connected state, so giving up for participant [63B048DD] on channel [2].
+Not in connected state, so giving up for participant [63B048DD] on channel [3].
