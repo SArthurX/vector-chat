@@ -21,7 +21,7 @@ struct DeviceRow: View {
                     .font(.headline)
                 
                 // 調試輸出 - 改進版本
-                let _ = debuglog("\(device.displayName.prefix(5)) - distance: \(device.distance?.description ?? "nil"), direction: \(device.direction?.debugDescription ?? "nil"), lastUpdateTime: \(device.lastUpdateTime)")
+                // let _ = debuglog("\(device.displayName.prefix(5)) - distance: \(device.distance?.description ?? "nil"), direction: \(device.direction?.debugDescription ?? "nil"), lastUpdateTime: \(device.lastUpdateTime)")
                 
                 if let distance = device.distance {
                     Text(String(format: "距離: %.2f 公尺", distance))

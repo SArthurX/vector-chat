@@ -87,7 +87,10 @@ class NearbyInteractionManager: NSObject, ObservableObject {
         
         // 設置 MC 服務的連接回調，觸發 Discovery Token 發送
         mcService.onPeerConnected = { [weak self] in
-            self?.niService.sendDiscoveryTokenIfReady()
+            // 延遲發送，確保連接穩定後再發送 Discovery Token
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                self?.niService.sendDiscoveryTokenIfReady()
+            }
         }
         
         // 設置 NI 服務的 Discovery Token 發送回調

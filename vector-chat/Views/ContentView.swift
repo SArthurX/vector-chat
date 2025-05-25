@@ -10,6 +10,7 @@ import SwiftUI
 /// 主視圖，包含雷達和裝置列表
 struct ContentView: View {
     @StateObject private var interactionManager = NearbyInteractionManager()
+
     @State private var showUnsupportedDeviceAlert = false
     @State private var showNISessionInvalidatedAlert = false
 

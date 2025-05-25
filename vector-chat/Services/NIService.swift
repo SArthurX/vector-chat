@@ -27,6 +27,11 @@ class NIService: NSObject, ObservableObject {
     // 新增：追蹤已配置的 peers，避免重複配置
     private var configuredPeers: Set<MCPeerID> = []
     
+    // 新增：配置隊列，避免同時配置多個peer導致NI Session失效
+    private var configurationQueue: [(MCPeerID, NIDiscoveryToken)] = []
+    private var isConfiguring = false
+    private let configurationDispatchQueue = DispatchQueue(label: "ni.configuration", qos: .userInitiated)
+    
     // MARK: - 回調
     var onDiscoveryTokenReady: ((NIDiscoveryToken) -> Void)?
     var shouldSendToken: (() -> Bool)?
@@ -61,28 +66,86 @@ class NIService: NSObject, ObservableObject {
         discoveryTokenToPeerMap.removeAll()
         peerIDToDiscoveryTokenMap.removeAll()
         configuredPeers.removeAll()
+        
+        // 清理配置隊列
+        configurationDispatchQueue.async { [weak self] in
+            self?.configurationQueue.removeAll()
+            self?.isConfiguring = false
+        }
+        
         print("NI Session 已停止並失效")
     }
     
     func runConfiguration(for peerID: MCPeerID, with token: NIDiscoveryToken) {
-        guard let niSession = niSession, !sessionInvalidated else {
-            debuglog("NI Session 無效，無法運行配置")
+        // 將配置請求加入隊列
+        configurationDispatchQueue.async { [weak self] in
+            self?.addToConfigurationQueue(peerID: peerID, token: token)
+        }
+    }
+    
+    private func addToConfigurationQueue(peerID: MCPeerID, token: NIDiscoveryToken) {
+        // 檢查是否已經在隊列中或已配置
+        if configuredPeers.contains(peerID) {
+            debuglog("已為 \(peerID.displayName.prefix(5)) 配置過 NI，跳過重複配置")
             return
         }
         
-        // 檢查是否已經為此 peer 配置過，避免重複配置
+        // 檢查隊列中是否已有相同的請求
+        if configurationQueue.contains(where: { $0.0 == peerID }) {
+            debuglog("配置請求 \(peerID.displayName.prefix(5)) 已在隊列中，跳過")
+            return
+        }
+        
+        // 添加到隊列
+        configurationQueue.append((peerID, token))
+        debuglog("將 \(peerID.displayName.prefix(5)) 的配置請求加入隊列，隊列長度: \(configurationQueue.count)")
+        
+        // 如果當前沒有在配置，開始處理隊列
+        if !isConfiguring {
+            processConfigurationQueue()
+        }
+    }
+    
+    private func processConfigurationQueue() {
+        guard !configurationQueue.isEmpty, !isConfiguring else { return }
+        
+        guard let niSession = niSession, !sessionInvalidated else {
+            debuglog("NI Session 無效，清空配置隊列")
+            configurationQueue.removeAll()
+            return
+        }
+        
+        isConfiguring = true
+        let (peerID, token) = configurationQueue.removeFirst()
+        
+        debuglog("開始處理配置隊列，為 \(peerID.displayName.prefix(5)) 配置 NI")
+        
+        // 檢查是否已經配置過
         if configuredPeers.contains(peerID) {
-            debuglog("已為 \(peerID.displayName.prefix(5)) 配置過 NI，跳過重複配置")
+            debuglog("已為 \(peerID.displayName.prefix(5)) 配置過，跳過並處理下一個")
+            isConfiguring = false
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+                self?.configurationDispatchQueue.async {
+                    self?.processConfigurationQueue()
+                }
+            }
             return
         }
         
         // 檢查是否已經有相同的 token
         if let existingPeer = discoveryTokenToPeerMap[token], existingPeer == peerID {
             debuglog("相同的 token 已存在於 \(peerID.displayName.prefix(5))，跳過配置")
+            configuredPeers.insert(peerID)
+            isConfiguring = false
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+                self?.configurationDispatchQueue.async {
+                    self?.processConfigurationQueue()
+                }
+            }
             return
         }
         
-        // 儲存對方 token 和 peerID 的對應關係
+        // 儲存映射關係
         discoveryTokenToPeerMap[token] = peerID
         peerIDToDiscoveryTokenMap[peerID] = token
         configuredPeers.insert(peerID)
@@ -98,6 +161,14 @@ class NIService: NSObject, ObservableObject {
             configuredPeers.remove(peerID)
             discoveryTokenToPeerMap.removeValue(forKey: token)
             peerIDToDiscoveryTokenMap.removeValue(forKey: peerID)
+        }
+        
+        // 配置完成，延遲處理下一個（重要：給NI Session時間處理）
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [weak self] in
+            self?.configurationDispatchQueue.async {
+                self?.isConfiguring = false
+                self?.processConfigurationQueue()
+            }
         }
     }
     
@@ -168,7 +239,11 @@ class NIService: NSObject, ObservableObject {
 // MARK: - NISessionDelegate
 extension NIService: NISessionDelegate {
     func session(_ session: NISession, didUpdate nearbyObjects: [NINearbyObject]) {
-        debuglog("NI Session 收到更新，物件數量: \(nearbyObjects.count)")
+        // debuglog("NI Session 收到更新，物件數量: \(nearbyObjects.count)")
+        if nearbyObjects.count > 1{
+            debuglog("NI Session 收到更新，物件數量: \(nearbyObjects.count)")
+            return
+        }
         
         var updatedObjects: [MCPeerID: NINearbyObject] = [:]
         
@@ -223,25 +298,36 @@ extension NIService: NISessionDelegate {
         debuglog("NI Session 暫停結束 (Suspension Ended)")
         debuglog("嘗試為已連接的 Peers 重新運行 NI Configuration")
         
-        // 清理配置狀態，允許重新配置
-        configuredPeers.removeAll()
-        
-        for (peerID, token) in peerIDToDiscoveryTokenMap {
-            let config = NINearbyPeerConfiguration(peerToken: token)
-            debuglog("  為 \(peerID.displayName.prefix(5)) 重新運行 NI Configuration")
-            do {
-                niSession?.run(config)
-                configuredPeers.insert(peerID)
-            } catch {
-                debuglog("重新配置 \(peerID.displayName.prefix(5)) 失敗: \(error.localizedDescription)")
+        // 清理配置狀態並重置隊列
+        configurationDispatchQueue.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.configuredPeers.removeAll()
+            self.isConfiguring = false
+            self.configurationQueue.removeAll()
+            
+            // 重新加入所有需要配置的peers到隊列
+            for (peerID, token) in self.peerIDToDiscoveryTokenMap {
+                self.configurationQueue.append((peerID, token))
+                debuglog("重新將 \(peerID.displayName.prefix(5)) 加入配置隊列")
             }
+            
+            // 開始處理隊列
+            self.processConfigurationQueue()
         }
     }
     
     func session(_ session: NISession, didInvalidateWith error: Error) {
         debuglog("NI Session 失效: \(error.localizedDescription)")
         sessionInvalidated = true
-        configuredPeers.removeAll()
+        
+        // 清理所有配置狀態和隊列
+        configurationDispatchQueue.async { [weak self] in
+            guard let self = self else { return }
+            self.configuredPeers.removeAll()
+            self.configurationQueue.removeAll()
+            self.isConfiguring = false
+        }
         
         DispatchQueue.main.async {
             self.isSessionInvalidated = true
