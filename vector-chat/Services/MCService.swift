@@ -27,6 +27,10 @@ class MCService: NSObject, ObservableObject {
     private var pendingInvitations: Set<MCPeerID> = []
     private var connectingPeers: Set<MCPeerID> = []
     
+    // 新增：追蹤 Discovery Token 發送狀態
+    private var sentTokenToPeers: Set<MCPeerID> = []
+    private var isInitialTokenSent = false
+    
     // MARK: - 回調
     var onDiscoveryTokenReceived: ((MCPeerID, NIDiscoveryToken) -> Void)?
     var onPeerConnected: (() -> Void)?
@@ -77,6 +81,8 @@ class MCService: NSObject, ObservableObject {
         
         pendingInvitations.removeAll()
         connectingPeers.removeAll()
+        sentTokenToPeers.removeAll()
+        isInitialTokenSent = false
     }
     
     func sendDiscoveryToken(_ token: NIDiscoveryToken) {
@@ -85,10 +91,25 @@ class MCService: NSObject, ObservableObject {
             return
         }
         
+        // 只發送給尚未收到 token 的新連接設備
+        let newPeers = Set(mcSession.connectedPeers).subtracting(sentTokenToPeers)
+        
+        guard !newPeers.isEmpty else {
+            debuglog("所有已連接的 Peers 都已收到 Discovery Token，跳過發送")
+            return
+        }
+        
         do {
             let data = try NSKeyedArchiver.archivedData(withRootObject: token, requiringSecureCoding: true)
-            try mcSession.send(data, toPeers: mcSession.connectedPeers, with: .reliable)
-            debuglog("已傳送 Discovery Token 給 \(mcSession.connectedPeers.count) 個連接的 peers")
+            try mcSession.send(data, toPeers: Array(newPeers), with: .reliable)
+            
+            // 記錄已發送的 peers
+            sentTokenToPeers.formUnion(newPeers)
+            
+            debuglog("已傳送 Discovery Token 給 \(newPeers.count) 個新連接的 peers")
+            for peer in newPeers {
+                debuglog("  -> \(peer.displayName.prefix(5))")
+            }
         } catch {
             debuglog("傳送 Discovery Token 失敗: \(error.localizedDescription)")
         }
@@ -100,6 +121,10 @@ class MCService: NSObject, ObservableObject {
         DispatchQueue.main.async {
             self.connectedPeers.remove(peerID)
         }
+        
+        // 清理 token 發送記錄
+        sentTokenToPeers.remove(peerID)
+        
         debuglog("從本地狀態移除 peer: \(peerID.displayName)")
     }
     
@@ -132,18 +157,18 @@ class MCService: NSObject, ObservableObject {
 // MARK: - MCNearbyServiceAdvertiserDelegate
 extension MCService: MCNearbyServiceAdvertiserDelegate {
     func advertiser(_ advertiser: MCNearbyServiceAdvertiser, didReceiveInvitationFromPeer peerID: MCPeerID, withContext context: Data?, invitationHandler: @escaping (Bool, MCSession?) -> Void) {
-        debuglog("收到來自 \(peerID.displayName) 的連接邀請")
+        debuglog("收到來自 \(peerID.displayName.prefix(5)) 的連接邀請")
         
         // 檢查是否已經與此 peer 連接
         if connectedPeers.contains(peerID) {
-            debuglog("與 \(peerID.displayName) 已經建立連接，拒絕邀請")
+            debuglog("與 \(peerID.displayName.prefix(5)) 已經建立連接，拒絕邀請")
             invitationHandler(false, nil)
             return
         }
         
         // 接受邀請，使用共享的 mcSession
         invitationHandler(true, mcSession)
-        debuglog("已接受來自 \(peerID.displayName) 的連接邀請")
+        debuglog("已接受來自 \(peerID.displayName.prefix(5)) 的連接邀請")
         
         // 移除待處理的邀請狀態
         pendingInvitations.remove(peerID)
@@ -157,7 +182,7 @@ extension MCService: MCNearbyServiceAdvertiserDelegate {
 // MARK: - MCNearbyServiceBrowserDelegate
 extension MCService: MCNearbyServiceBrowserDelegate {
     func browser(_ browser: MCNearbyServiceBrowser, foundPeer peerID: MCPeerID, withDiscoveryInfo info: [String : String]?) {
-        debuglog("發現裝置: \(peerID.displayName)")
+        debuglog("發現裝置: \(peerID.displayName.prefix(5))")
         
         DispatchQueue.main.async {
             self.discoveredPeers.insert(peerID)
@@ -165,32 +190,32 @@ extension MCService: MCNearbyServiceBrowserDelegate {
         
         // 檢查是否已連接或正在連接
         guard !connectedPeers.contains(peerID) && !connectingPeers.contains(peerID) else {
-            debuglog("裝置 \(peerID.displayName) 已連接或正在連接，忽略此次發現")
+            debuglog("裝置 \(peerID.displayName.prefix(5)) 已連接或正在連接，忽略此次發現")
             return
         }
         
         // 檢查是否已有等待中的邀請
         guard !pendingInvitations.contains(peerID) else {
-            debuglog("已存在等待中的邀請給 \(peerID.displayName)，跳過")
+            debuglog("已存在等待中的邀請給 \(peerID.displayName.prefix(5))，跳過")
             return
         }
         
         // 使用 UUID 來決定誰發送邀請（防止雙向邀請衝突）
         if let peerUUID = info?["uuid"], shouldInitiateConnection(to: peerUUID) {
-            debuglog("本機 UUID 字典序較小，發送邀請給 \(peerID.displayName)")
+            debuglog("本機 UUID 字典序較小，發送邀請給 \(peerID.displayName.prefix(5))")
             
             pendingInvitations.insert(peerID)
             connectingPeers.insert(peerID)
             
             browser.invitePeer(peerID, to: mcSession, withContext: nil, timeout: 30)
-            debuglog("已向 \(peerID.displayName) 發送連接邀請")
+            debuglog("已向 \(peerID.displayName.prefix(5)) 發送連接邀請")
         } else {
-            debuglog("本機 UUID 字典序較大或無法比較，等待對方邀請 \(peerID.displayName)")
+            debuglog("本機 UUID 字典序較大或無法比較，等待對方邀請 \(peerID.displayName.prefix(5))")
         }
     }
     
     func browser(_ browser: MCNearbyServiceBrowser, lostPeer peerID: MCPeerID) {
-        debuglog("裝置消失 (MPC): \(peerID.displayName)")
+        debuglog("裝置消失 (MPC): \(peerID.displayName.prefix(5))")
         
         DispatchQueue.main.async {
             self.discoveredPeers.remove(peerID)
@@ -199,6 +224,7 @@ extension MCService: MCNearbyServiceBrowserDelegate {
         // 清理本地狀態
         pendingInvitations.remove(peerID)
         connectingPeers.remove(peerID)
+        sentTokenToPeers.remove(peerID)
     }
     
     func browser(_ browser: MCNearbyServiceBrowser, didNotStartBrowsingForPeers error: Error) {
@@ -212,7 +238,7 @@ extension MCService: MCSessionDelegate {
         DispatchQueue.main.async {
             switch state {
             case .connected:
-                debuglog("MCP Session 與 \(peerID.displayName) 已連接")
+                debuglog("MCP Session 與 \(peerID.displayName.prefix(5)) 已連接")
                 self.connectedPeers.insert(peerID)
                 self.pendingInvitations.remove(peerID)
                 self.connectingPeers.remove(peerID)
@@ -223,26 +249,27 @@ extension MCService: MCSessionDelegate {
                 self.onPeerConnected?()
                 
             case .connecting:
-                debuglog("MCP Session 與 \(peerID.displayName) 正在連接...")
+                debuglog("MCP Session 與 \(peerID.displayName.prefix(5)) 正在連接...")
                 
             case .notConnected:
-                debuglog("MCP Session 與 \(peerID.displayName) 未連接或已斷開")
+                debuglog("MCP Session 與 \(peerID.displayName.prefix(5)) 未連接或已斷開")
                 self.connectedPeers.remove(peerID)
                 self.pendingInvitations.remove(peerID)
                 self.connectingPeers.remove(peerID)
+                self.sentTokenToPeers.remove(peerID)
                 
             @unknown default:
-                debuglog("MCP Session 與 \(peerID.displayName) 狀態未知")
+                debuglog("MCP Session 與 \(peerID.displayName.prefix(5)) 狀態未知")
             }
         }
     }
     
     func session(_ session: MCSession, didReceive data: Data, fromPeer peerID: MCPeerID) {
-        debuglog("從 \(peerID.displayName) 收到資料，長度: \(data.count)")
+        debuglog("從 \(peerID.displayName.prefix(5)) 收到資料，長度: \(data.count)")
         
         do {
             if let discoveryToken = try NSKeyedUnarchiver.unarchivedObject(ofClass: NIDiscoveryToken.self, from: data) {
-                debuglog("成功從 \(peerID.displayName) 收到 Discovery Token")
+                debuglog("成功從 \(peerID.displayName.prefix(5)) 收到 Discovery Token")
                 onDiscoveryTokenReceived?(peerID, discoveryToken)
             }
         } catch {
@@ -252,18 +279,18 @@ extension MCService: MCSessionDelegate {
     
     // 以下方法在此範例中未使用，但必須實作
     func session(_ session: MCSession, didReceive stream: InputStream, withName streamName: String, fromPeer peerID: MCPeerID) {
-        debuglog("MCSession: didReceive stream from \(peerID.displayName)")
+        debuglog("MCSession: didReceive stream from \(peerID.displayName.prefix(5))")
     }
     
     func session(_ session: MCSession, didStartReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, with progress: Progress) {
-        debuglog("MCSession: didStartReceivingResourceWithName \(resourceName) from \(peerID.displayName)")
+        debuglog("MCSession: didStartReceivingResourceWithName \(resourceName) from \(peerID.displayName.prefix(5))")
     }
     
     func session(_ session: MCSession, didFinishReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, at localURL: URL?, withError error: Error?) {
         if let error = error {
-            debuglog("MCSession: didFinishReceivingResourceWithName \(resourceName) from \(peerID.displayName) with error: \(error.localizedDescription)")
+            debuglog("MCSession: didFinishReceivingResourceWithName \(resourceName) from \(peerID.displayName.prefix(5)) with error: \(error.localizedDescription)")
         } else {
-            debuglog("MCSession: didFinishReceivingResourceWithName \(resourceName) from \(peerID.displayName) successfully")
+            debuglog("MCSession: didFinishReceivingResourceWithName \(resourceName) from \(peerID.displayName.prefix(5)) successfully")
         }
     }
 }

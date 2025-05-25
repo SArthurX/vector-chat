@@ -24,6 +24,9 @@ class NIService: NSObject, ObservableObject {
     private var peerIDToDiscoveryTokenMap: [MCPeerID: NIDiscoveryToken] = [:]
     private var cancellables = Set<AnyCancellable>()
     
+    // 新增：追蹤已配置的 peers，避免重複配置
+    private var configuredPeers: Set<MCPeerID> = []
+    
     // MARK: - 回調
     var onDiscoveryTokenReady: ((NIDiscoveryToken) -> Void)?
     var shouldSendToken: (() -> Bool)?
@@ -57,6 +60,7 @@ class NIService: NSObject, ObservableObject {
         nearbyObjects.removeAll()
         discoveryTokenToPeerMap.removeAll()
         peerIDToDiscoveryTokenMap.removeAll()
+        configuredPeers.removeAll()
         print("NI Session 已停止並失效")
     }
     
@@ -66,13 +70,35 @@ class NIService: NSObject, ObservableObject {
             return
         }
         
+        // 檢查是否已經為此 peer 配置過，避免重複配置
+        if configuredPeers.contains(peerID) {
+            debuglog("已為 \(peerID.displayName.prefix(5)) 配置過 NI，跳過重複配置")
+            return
+        }
+        
+        // 檢查是否已經有相同的 token
+        if let existingPeer = discoveryTokenToPeerMap[token], existingPeer == peerID {
+            debuglog("相同的 token 已存在於 \(peerID.displayName.prefix(5))，跳過配置")
+            return
+        }
+        
         // 儲存對方 token 和 peerID 的對應關係
         discoveryTokenToPeerMap[token] = peerID
         peerIDToDiscoveryTokenMap[peerID] = token
+        configuredPeers.insert(peerID)
         
         let config = NINearbyPeerConfiguration(peerToken: token)
-        niSession.run(config)
-        debuglog("為 \(peerID.displayName) 運行 NI Configuration")
+        
+        do {
+            niSession.run(config)
+            debuglog("為 \(peerID.displayName.prefix(5)) 成功運行 NI Configuration")
+        } catch {
+            debuglog("為 \(peerID.displayName.prefix(5)) 運行 NI Configuration 失敗: \(error.localizedDescription)")
+            // 配置失敗時清理狀態
+            configuredPeers.remove(peerID)
+            discoveryTokenToPeerMap.removeValue(forKey: token)
+            peerIDToDiscoveryTokenMap.removeValue(forKey: peerID)
+        }
     }
     
     func removePeer(_ peerID: MCPeerID) {
@@ -80,6 +106,8 @@ class NIService: NSObject, ObservableObject {
             discoveryTokenToPeerMap.removeValue(forKey: token)
         }
         nearbyObjects.removeValue(forKey: peerID)
+        configuredPeers.remove(peerID)
+        debuglog("已清理 peer: \(peerID.displayName.prefix(5))")
     }
     
     /// 觸發 Discovery Token 發送（當有 MC 連接時調用）
@@ -106,6 +134,7 @@ class NIService: NSObject, ObservableObject {
         niSession?.delegate = self
         sessionInvalidated = false
         isSessionInvalidated = false
+        configuredPeers.removeAll() // 清理配置狀態
         debuglog("NI Session 已設定並指派代理")
         
         // 不立即發送 Discovery Token，等待有連接時再發送
@@ -145,7 +174,7 @@ extension NIService: NISessionDelegate {
         
         for object in nearbyObjects {
             guard let peerID = discoveryTokenToPeerMap[object.discoveryToken] else {
-                debuglog("收到未知 Discovery Token 的更新: \(object.discoveryToken)")
+                debuglog("收到未知 Discovery Token 的更新")
                 continue
             }
             updatedObjects[peerID] = object
@@ -159,16 +188,17 @@ extension NIService: NISessionDelegate {
     func session(_ session: NISession, didRemove nearbyObjects: [NINearbyObject], reason: NINearbyObject.RemovalReason) {
         for object in nearbyObjects {
             guard let peerID = discoveryTokenToPeerMap[object.discoveryToken] else {
-                debuglog("收到未知 Discovery Token 的移除通知: \(object.discoveryToken)")
+                debuglog("收到未知 Discovery Token 的移除通知")
                 continue
             }
             
-            debuglog("NI Session 移除了裝置: \(peerID.displayName), 原因: \(reason)")
+            debuglog("NI Session 移除了裝置: \(peerID.displayName.prefix(5)), 原因: \(reason)")
             
             DispatchQueue.main.async {
                 self.nearbyObjects.removeValue(forKey: peerID)
                 self.discoveryTokenToPeerMap.removeValue(forKey: object.discoveryToken)
                 self.peerIDToDiscoveryTokenMap.removeValue(forKey: peerID)
+                self.configuredPeers.remove(peerID)
             }
             
             // 根據移除原因決定處理方式
@@ -185,22 +215,33 @@ extension NIService: NISessionDelegate {
     
     func sessionWasSuspended(_ session: NISession) {
         print("NI Session 已暫停 (Was Suspended)")
+        // 清理配置狀態，因為 session 暫停後需要重新配置
+        configuredPeers.removeAll()
     }
     
     func sessionSuspensionEnded(_ session: NISession) {
         debuglog("NI Session 暫停結束 (Suspension Ended)")
         debuglog("嘗試為已連接的 Peers 重新運行 NI Configuration")
         
+        // 清理配置狀態，允許重新配置
+        configuredPeers.removeAll()
+        
         for (peerID, token) in peerIDToDiscoveryTokenMap {
             let config = NINearbyPeerConfiguration(peerToken: token)
-            debuglog("  為 \(peerID.displayName) 重新運行 NI Configuration")
-            niSession?.run(config)
+            debuglog("  為 \(peerID.displayName.prefix(5)) 重新運行 NI Configuration")
+            do {
+                niSession?.run(config)
+                configuredPeers.insert(peerID)
+            } catch {
+                debuglog("重新配置 \(peerID.displayName.prefix(5)) 失敗: \(error.localizedDescription)")
+            }
         }
     }
     
     func session(_ session: NISession, didInvalidateWith error: Error) {
         debuglog("NI Session 失效: \(error.localizedDescription)")
         sessionInvalidated = true
+        configuredPeers.removeAll()
         
         DispatchQueue.main.async {
             self.isSessionInvalidated = true
