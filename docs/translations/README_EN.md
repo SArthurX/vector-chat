@@ -5,10 +5,10 @@ An iOS application based on Apple's Ultra Wideband (UWB) technology and Multipee
 ## 🌐 Multi-language Support
 
 This documentation is available in multiple languages:
-- 🇺🇸 [English](README.md) (Current version)
-- 🇹🇼 [繁體中文](docs/translations/README_ZH-TW.md) (Traditional Chinese)
+- 🇺🇸 [English](README_EN.md) (Current version)
+- 🇹🇼 [繁體中文](../../README.md) (Traditional Chinese)
 
-View all available translations: [Translation Index](docs/translations/README.md)
+View all available translations: [Translation Index](README.md)
 
 ## 🌟 Features
 
